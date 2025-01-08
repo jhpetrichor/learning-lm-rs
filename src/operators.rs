@@ -75,14 +75,11 @@ pub fn rms_norm(y: &mut Tensor<f32>, x: &Tensor<f32>, w: &Tensor<f32>, epsilon: 
     let step = x.shape()[x.shape().len() - 1];
     assert_eq!(len, x.size());
     assert_eq!(x.shape(), y.shape());
-    // assert_eq!(len, w.size());
-    assert_eq!(x.shape(), w.shape());
 
     let _y = unsafe {y.data_mut()};
     let _x = x.data();
     let _w = w.data();
 
-    println!("step: {}", step);
     let mut i = 0;
     while i < len {
         let mut sum = 0.;
@@ -91,7 +88,7 @@ pub fn rms_norm(y: &mut Tensor<f32>, x: &Tensor<f32>, w: &Tensor<f32>, epsilon: 
         }
         sum = (sum / step as f32 + epsilon).powf(0.5);
         for j in i..i+step {
-            _y[j] = (_x[j%step] * _w[j%step]) / sum;
+            _y[j] = (_x[j] * _w[j % 2]) / sum;
         }
         i += step;
     }
