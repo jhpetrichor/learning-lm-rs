@@ -1,3 +1,4 @@
+use std::process::id;
 use crate::tensor::{self, Tensor};
 
 // get (row) vectors from a 2D table given a list of indices
@@ -110,7 +111,29 @@ pub fn swiglu(y: &mut Tensor<f32>, x: &Tensor<f32>) {
 // C = beta * C + alpha * A @ B^T
 // hint: You don't need to do an explicit transpose of B
 pub fn matmul_transb(c: &mut Tensor<f32>, beta: f32, a: &Tensor<f32>, b: &Tensor<f32>, alpha: f32) {
-    todo!("实现 matmul_transb，计算前做一些必要的检查会帮助你后续调试");
+    // todo!("实现 matmul_transb，计算前做一些必要的检查会帮助你后续调试");
+    let (m, n) = (a.shape()[0], a.shape()[1]);
+    let (z, w) = (b.shape()[0], b.shape()[1]);
+    assert_eq!(w, n);
+    assert_eq!(c.shape()[0], m);
+    assert_eq!(c.shape()[1], z);
+
+    let mut _c = unsafe {c.data_mut()};
+    let _a = a.data();
+    let _b = b.data();
+
+    for i in 0..m { //[i, ..]
+        for j in 0..z {
+            let mut sum = 0.;
+            let idx_a = i * n;
+            let idx_b = j * w;
+            for k in 0..n  {
+                sum += alpha * _a[idx_a + k] * _b[idx_b + k];
+            }
+            let idx_c = i * z + j;
+            _c[idx_c] = beta * _c[idx_c] + sum;
+        }
+    }
 }
 
 // Dot product of two tensors (treated as vectors)
